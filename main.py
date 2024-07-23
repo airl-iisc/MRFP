@@ -782,7 +782,7 @@ class MapillarySegmentation(data.Dataset):
 
         return composed_transforms(sample)
 
-
+###ARGPARSER###
 
 parser = argparse.ArgumentParser()
 args = parser.parse_args()
@@ -793,6 +793,7 @@ args.val_sizeH = 512
 args.val_sizeW = 1024
 args.max_iter = 40000 
 args.model_name = 'save_model_MRFP'
+MODEL_PATH = '/your/model/path'
 
 cityscapes_train = CityscapesSegmentation(args, split='train')
 cityscapes_val = CityscapesSegmentation(args, split='val')
@@ -837,10 +838,11 @@ class LRPolicy(object):
 
 scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=LRPolicy(powr=0.9))
 
-MODEL_PATH = '/your/model/path'
 iter = 0
 ended = 0
-for epoch in range(110):                                        #some big number, to just run the loop. Takes max_iter as the primary arguement.
+
+#UNCOMMENT THE FOLLOWING BLOCK OF CODE TO TRAIN THE MODEL
+"""for epoch in range(110):                                        #some big number, to just run the loop. Takes max_iter as the primary argument.
     iterator = tqdm(train_dataloader)
     model.train()
     torch.cuda.empty_cache()
@@ -866,13 +868,16 @@ for epoch in range(110):                                        #some big number
             torch.save({'epoch': epoch, 'state_dict': model.state_dict(), 'optimizer': optimizer.state_dict()}, os.path.join(MODEL_PATH, args.model_name+'_actuallatest.pth'))
     torch.save({'epoch': epoch, 'state_dict': model.state_dict()}, os.path.join(MODEL_PATH, args.model_name+'_latest.pth')) # saves model after each epoch
     if ended==1:
-        break
+        break"""
 
 
 print("Done training! ")
 print("------------------------------------Running Validation for all datasets-----------------------------")
 test_domains = [BDD_val_dataloader, city_val_dataloader, synthia_val_dataloader, mapillary_val_loader, GTAV_val_dataloader]
 test_domains_str = ['BDD100k', 'Cityscapes', 'SYNTHIA','Mapillary', 'GTAV']
+
+
+### NEXT BLOCK OF CODE IS FOR INFERENCING ON ALL DATASETS ###
 
 for i in range(len(test_domains)):
     test_iterator = tqdm(test_domains[i])
