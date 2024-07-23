@@ -5,6 +5,20 @@ Deep neural networks have shown exemplary performance on semantic scene understa
 
 Check out our paper [here](https://openaccess.thecvf.com/content/CVPR2024/papers/Udupa_MRFP_Learning_Generalizable_Semantic_Segmentation_from_Sim-2-Real_with_Multi-Resolution_Feature_CVPR_2024_paper.pdf), presentation video [here](https://www.youtube.com/watch?v=63sYr5LoHvo) and the poster [here](https://cvpr.thecvf.com/media/PosterPDFs/CVPR%202024/29708.png?t=1717342777.2902172).
 
+![MRFP_based_architecture](https://github.com/airl-iisc/MRFP/blob/main/pngs/arch.png)
+
+
+![Main Results](https://github.com/airl-iisc/MRFP/blob/main/pngs/mrfp_maintable.png)
+
+
+![Adverse Weather Results](https://github.com/airl-iisc/MRFP/blob/main/pngs/mrfp_table2.png)
+
+We advise you to use conda environment to run the package. Run the following command to install all the necessary modules:
+
+```sh
+conda env create -f SDG.yml 
+conda activate solaris_new
+```
 
 
 
