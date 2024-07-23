@@ -26,7 +26,7 @@ To train the model from scratch, follow the comments given in the main.py file. 
 
 ![Adverse Weather Results](https://github.com/airl-iisc/MRFP/blob/main/pngs/mrfp_table2.png)
 
-![Qualitative_results](https://github.com/airl-iisc/MRFP/blob/main/pngs/Screenshot_final.png).
+![Qualitative_results](https://github.com/airl-iisc/MRFP/blob/main/pngs/Screenshot_final.png)
 
 
 ## Citation 
