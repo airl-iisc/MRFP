@@ -409,15 +409,12 @@ class GTAVSegmentation(data.Dataset):
 
     def transform_tr(self, sample):
         composed_transforms = transforms.Compose([
-            # tr.PASTA(3.0,0.25,2.0),
             tr.RandomHorizontalFlip(),
             tr.ColorJitter(brightness=0.5, hue=0.3, contrast=0.2,saturation=0.2),
             tr.RandomSizeAndCrop(size=self.args.crop_size, crop_nopad = False, ignore_index=255,pre_size=None),
             tr.Resize(size1=self.args.crop_size, size2=self.args.crop_size),
             tr.RandomGaussianBlur(),
             tr.ToTensor()])
-            #tr.Normalize(mean=(0.5,0.5,0.5), std=(0.5,0.5,0.5)),
-            # ])
 
         return composed_transforms(sample)
 
@@ -505,9 +502,6 @@ class BDD100kSegmentation(data.Dataset):
             tr.ColorJitter(brightness=0.5, hue=0.3, contrast=0.2,saturation=0.2),
             tr.Resize(size1=self.args.base_size, size2=self.args.crop_size),
             tr.RandomGaussianBlur(),
-            #tr.HPF(),
-            #tr.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-            #tr.Contrast(),
             tr.ToTensor()])
 
         return composed_transforms(sample)
@@ -789,14 +783,16 @@ class MapillarySegmentation(data.Dataset):
         return composed_transforms(sample)
 
 
+
 parser = argparse.ArgumentParser()
 args = parser.parse_args()
 args.base_size = 768
 args.crop_size = 768
 args.eval_size = 1536
 args.val_sizeH = 512 
-args.val_sizeW = 1024 
-args.model_name = 'cvpr_bsz16mrfpplusrun3'
+args.val_sizeW = 1024
+args.max_iter = 40000 
+args.model_name = 'save_model_MRFP'
 
 cityscapes_train = CityscapesSegmentation(args, split='train')
 cityscapes_val = CityscapesSegmentation(args, split='val')
@@ -814,7 +810,7 @@ mapillary_train = MapillarySegmentation(args, split='training')
 mapillary_val = MapillarySegmentation(args, split='validation')
 
 city_train_dataloader = DataLoader(cityscapes_train, batch_size=16, shuffle=True, num_workers=4,pin_memory=True)
-train_dataloader = DataLoader(GTAV_train, batch_size=16, shuffle=True, num_workers=8,pin_memory=True) #batch_size=16
+train_dataloader = DataLoader(GTAV_train, batch_size=16, shuffle=True, num_workers=8,pin_memory=True)
 synthia_train_dataloader = DataLoader(synthia_train, batch_size=8, shuffle=True, num_workers=4,pin_memory=True)
 city_val_dataloader = DataLoader(cityscapes_val, batch_size=1, shuffle=False,pin_memory=True, num_workers=4)
 GTAV_val_dataloader = DataLoader(GTAV_val, batch_size=1, shuffle=False,pin_memory=True, num_workers=4)
@@ -822,11 +818,10 @@ BDD_val_dataloader = DataLoader(BDD_val, batch_size=1, shuffle=False,pin_memory=
 synthia_val_dataloader = DataLoader(synthia_val, batch_size=1, shuffle=False,pin_memory=True, num_workers=4)
 mapillary_val_loader = DataLoader(mapillary_val, batch_size=1, shuffle=False,pin_memory=True, num_workers=4)
 GTA_Synthia_trainloader = ConcatDataset([GTAV_train,synthia_train])
-criterion = nn.CrossEntropyLoss(ignore_index=255)  #Unet_ibnnet  Unet_MRFP
+criterion = nn.CrossEntropyLoss(ignore_index=255) 
 
-model = nn.DataParallel(LabMAO_MAOEncPerturb_noskipconn_randomOC_godmodel_INAffineTrue_perturbindec(num_classes=19, criterion=criterion).to('cuda:0'),device_ids=[0])
+model = nn.DataParallel(MRFPPlus(num_classes=19, criterion=criterion).to('cuda:0'),device_ids=[0])
 
-#optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-2,momentum=0.9,weight_decay=5e-4)
 max_loss = 10000.0
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -842,10 +837,10 @@ class LRPolicy(object):
 
 scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=LRPolicy(powr=0.9))
 
-MODEL_PATH = '/home/user/Perception/SDG/ckpt/Robustnet_settings_all_baseline_107epochs'
+MODEL_PATH = '/your/model/path'
 iter = 0
 ended = 0
-for epoch in range(110):
+for epoch in range(110):                                        #some big number, to just run the loop. Takes max_iter as the primary arguement.
     iterator = tqdm(train_dataloader)
     model.train()
     torch.cuda.empty_cache()
@@ -853,7 +848,7 @@ for epoch in range(110):
     for sample in iterator:
         izz +=1
         iter +=1
-        if iter>39998:
+        if iter> (args.max_iter-2):
             ended=1       
             torch.cuda.empty_cache()
             break
@@ -867,15 +862,15 @@ for epoch in range(110):
         scheduler.step()
 
         iterator.set_description("epoch: {}; iter: {}; l_r: {:.7f}; Loss {:.4f} ".format(epoch, iter, scheduler.get_lr()[-1], loss))
-        if iter>39980:
+        if iter>(args.max_iter-20):                                                     #starts saving the model for the last 20 iters, each iter save is overwritten until the last one remains.
             torch.save({'epoch': epoch, 'state_dict': model.state_dict(), 'optimizer': optimizer.state_dict()}, os.path.join(MODEL_PATH, args.model_name+'_actuallatest.pth'))
-    torch.save({'epoch': epoch, 'state_dict': model.state_dict()}, os.path.join(MODEL_PATH, args.model_name+'_latest.pth'))
+    torch.save({'epoch': epoch, 'state_dict': model.state_dict()}, os.path.join(MODEL_PATH, args.model_name+'_latest.pth')) # saves model after each epoch
     if ended==1:
         break
 
 
 print("Done training! ")
-print("------------------------------------Validation after 40k iterations-----------------------------")
+print("------------------------------------Running Validation for all datasets-----------------------------")
 test_domains = [BDD_val_dataloader, city_val_dataloader, synthia_val_dataloader, mapillary_val_loader, GTAV_val_dataloader]
 test_domains_str = ['BDD100k', 'Cityscapes', 'SYNTHIA','Mapillary', 'GTAV']
 
