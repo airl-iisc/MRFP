@@ -18,7 +18,7 @@ Update the data paths in the 'mypath.py' file.
 To run the inference for MRFP+, use the checkpoint provided [here](https://drive.google.com/file/d/1lYDR4bjBUmrUqyTZDpLJDZTRzBiCgtC2/view?usp=sharing). Update the main.py file with the correct MODEL_PATH. Run the main_script.sh file.
 
 
-To train the model from scratch, please follow the comments given in the main.py file. Then run the main_script.sh file.
+To train the model from scratch, please follow the comments given in the main.py file. To save a custom named model, use the args.model_name argument. Finally, run the main_script.sh file.
 
 ## Results
 ![Main Results](https://github.com/airl-iisc/MRFP/blob/main/pngs/mrfp_maintable.png)
