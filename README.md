@@ -7,18 +7,37 @@ Check out our paper [here](https://openaccess.thecvf.com/content/CVPR2024/papers
 
 ![MRFP_based_architecture](https://github.com/airl-iisc/MRFP/blob/main/pngs/arch.png)
 
-
-![Main Results](https://github.com/airl-iisc/MRFP/blob/main/pngs/mrfp_maintable.png)
-
-
-![Adverse Weather Results](https://github.com/airl-iisc/MRFP/blob/main/pngs/mrfp_table2.png)
-
 We advise you to use conda environment to run the package. Run the following command to install all the necessary modules:
 
 ```sh
 conda env create -f SDG.yml 
 conda activate solaris_new
 ```
+## Checkpoint
+Update the data paths in the 'mypath.py' in the command argparser.
+To run the inference for MRFP+, use the ckpt provided [here](https://drive.google.com/file/d/1lYDR4bjBUmrUqyTZDpLJDZTRzBiCgtC2/view?usp=sharing). Update the main.py file with the correct MODEL_PATH. Run the main_script.sh file.
 
 
+To train the model from scratch, follow the comments given in the main.py file. Then run the main_script.sh file.
+
+## Results
+![Main Results](https://github.com/airl-iisc/MRFP/blob/main/pngs/mrfp_maintable.png)
+
+
+![Adverse Weather Results](https://github.com/airl-iisc/MRFP/blob/main/pngs/mrfp_table2.png)
+
+
+## Citation 
+
+If you find this repo useful for your work, please cite our paper:
+
+```shell
+@inproceedings{udupa2024mrfp,
+  title={MRFP: Learning Generalizable Semantic Segmentation from Sim-2-Real with Multi-Resolution Feature Perturbation},
+  author={Udupa, Sumanth and Gurunath, Prajwal and Sikdar, Aniruddh and Sundaram, Suresh},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={5904--5914},
+  year={2024}
+}
+```
 
